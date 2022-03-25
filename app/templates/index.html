@@ -1,10 +1,12 @@
-<h1>Hello, world!</h1>
+<h1>Index</h1>
 
-{% for user in users %}
-
-<p>{{user.username}}</p>
-
-{% endfor %}
+<ul>
+  {% for category in categories %}
+  <a href="/category/{{category}}">
+    <li>{{ category }}S</li>
+  </a>
+  {% endfor %}
+</ul>
 
 <a href="/login">Login</a>
 <a href="/register">Register</a>

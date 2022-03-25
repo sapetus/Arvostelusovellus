@@ -1,0 +1,11 @@
+<h1>Category: {{category}}</h1>
+
+<ul>
+    {% for review_item in review_items %}
+    <a href="/category/{{category}}/{{review_item.id}}">
+        <li>{{review_item.name}}</li>
+    </a>
+    {% endfor %}
+</ul>
+
+<a href="/">Home</a>

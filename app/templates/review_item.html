@@ -1,0 +1,33 @@
+<h1>Review Item</h1>
+
+<p>Name: {{review_item.name}}</p>
+<p>Rating: {{rating}}</p>
+<p>Description: {{review_item.description}}</p>
+<p>Category: {{review_item.category}}</p>
+
+<hr>
+
+<h2>Reviews</h2>
+{% for review in reviews %}
+<p>{{review.text}}</p>
+<p>Rating: {{review.rating}}</p>
+<br>
+{% endfor %}
+
+<hr>
+
+<form action="/category/{{review_item.category}}/{{review_item.id}}" method="POST">
+    <p>Rating <br>
+        <input type="number" min="1" max="10" name="rating">
+    </p>
+    <p>Review <br>
+        <textarea name="review" cols="40" rows="4" maxlength="1000"></textarea>
+    </p>
+    <input type="hidden" name="review_item_id" value="{{review_item.id}}">
+    <button type="submit">Create Review</button>
+</form>
+
+<hr>
+
+<a href="/">Home</a>
+<a href="/category/{{review_item.category}}">{{review_item.category}}S</a>
