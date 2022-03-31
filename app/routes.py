@@ -93,12 +93,7 @@ def item(id, category):
         rating_result = db.session.execute(rating_query, {"id": id})
         rating = rating_result.fetchone()[0]
 
-        reviews_query = "SELECT r.id, u.username, r.rating, r.text \
-                         FROM review as r \
-                         JOIN user_account as u ON r.user_account_id = u.id \
-                         WHERE r.review_item_id=:id"
-        reviews_result = db.session.execute(reviews_query, {"id": id})
-        reviews = reviews_result.fetchall()
+        reviews = review.get_reviews_for_review_item(id)
 
         admin = user.is_admin(session.setdefault("username", None))
 
@@ -140,5 +135,6 @@ def delete_review(id):
 @app.route("/user/<username>")
 def user_page(username):
     user_information = user.get_user_information(username)
+    reviews = review.get_reviews_for_user(username)
 
-    return render_template("user.html", user_information=user_information, username=username)
+    return render_template("user.html", user_information=user_information, username=username, reviews=reviews)

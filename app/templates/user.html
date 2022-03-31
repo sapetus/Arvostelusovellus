@@ -6,4 +6,16 @@
 <p>{{data.key}}: {{data.value}}</p>
 {% endfor%}
 
+<hr>
+
+{% for review in reviews%}
+<div>
+	<p>Category: {{review.category}}</p>
+	<p>Name: {{review.name}}</p>
+	<p>Review: {{review.text}}</p>
+	<p>Rating: {{review.rating}}</p>
+</div>
+<hr>
+{% endfor %}
+
 <a href="/">Home</a>
