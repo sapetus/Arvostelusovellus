@@ -93,7 +93,10 @@ def item(id, category):
         rating_result = db.session.execute(rating_query, {"id": id})
         rating = rating_result.fetchone()[0]
 
-        reviews_query = "SELECT id, user_account_id, rating, text FROM review WHERE review_item_id=:id"
+        reviews_query = "SELECT r.id, u.username, r.rating, r.text \
+                         FROM review as r \
+                         JOIN user_account as u ON r.user_account_id = u.id \
+                         WHERE r.review_item_id=:id"
         reviews_result = db.session.execute(reviews_query, {"id": id})
         reviews = reviews_result.fetchall()
 
@@ -119,8 +122,15 @@ def item(id, category):
 @app.route("/delete_review/<int:id>")
 def delete_review(id):
     admin = user.is_admin(session.setdefault("username", None))
+    # checks if the user trying to delete the review is the same as the one who created it
+    sql = "SELECT 1 FROM review \
+           JOIN user_account ON review.user_account_id = user_account.id \
+           WHERE user_account.username=:username AND review.id=:id"
+    result = db.session.execute(sql, {"username": session.get("username", None), "id": id})
+    same_user = result.fetchone()[0]
+    print(same_user)
 
-    if admin:
+    if admin or same_user == 1:
         if review.delete(id):
             return redirect("/")
 

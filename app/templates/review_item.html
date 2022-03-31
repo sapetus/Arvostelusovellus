@@ -10,12 +10,15 @@
 
 <h2>Reviews</h2>
 {% for review in reviews %}
-<p>{{review.text}}</p>
-<p>Rating: {{review.rating}}</p>
-{% if admin %}
-<a href="/delete_review/{{review.id}}">Delete review</a>
-{% endif %}
-<br>
+<div>
+    <p>{{review.text}}</p>
+    <p>Rating: {{review.rating}}</p>
+    <p>Review by: <a href="/user/{{review.username}}">{{review.username}}</a></p>
+    {% if admin or session.username == review.username %}
+    <a href="/delete_review/{{review.id}}">Delete review</a>
+    {% endif %}
+    <br>
+</div>
 {% endfor %}
 
 <hr>
