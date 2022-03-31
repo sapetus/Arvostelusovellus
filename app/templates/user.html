@@ -1,0 +1,9 @@
+<h1>User Page</h1>
+
+<h3>{{username}}</h3>
+
+{% for data in user_information %}
+<p>{{data.key}}: {{data.value}}</p>
+{% endfor%}
+
+<a href="/">Home</a>

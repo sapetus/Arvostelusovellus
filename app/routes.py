@@ -5,6 +5,7 @@ import user
 import review
 import review_item
 
+
 @app.route("/")
 def index():
     sql = "SELECT enum_range(NULL::CATEGORY)"
@@ -83,7 +84,7 @@ def category(category):
 @app.route("/category/<category>/<int:id>", methods=["POST", "GET"])
 def item(id, category):
     if request.method == "GET":
-        #Possible to merge these queries?
+        # Possible to merge these queries?
         item_query = "SELECT * FROM review_item WHERE id=:id"
         item_result = db.session.execute(item_query, {"id": id})
         review_item = item_result.fetchone()
@@ -103,12 +104,13 @@ def item(id, category):
         rating = int(request.form["rating"])
         text = request.form["review"]
         review_item_id = request.form["review_item_id"]
+        user_id = user.user_id(session["username"])
 
         if rating > 10 or rating < 1:
             return render_template("error.html", message="Rating needs to be between 1 and 10.")
         if len(text) > 1000:
             return render_template("error.html", message="Review has a maximum length of 1000 characters.")
-        if review.create(rating, text, review_item_id):
+        if review.create(rating, text, review_item_id, user_id):
             return redirect(request.url)
 
         return render_template("error.html", message="Something went wrong when trying to create a review.")
@@ -123,3 +125,10 @@ def delete_review(id):
             return redirect("/")
 
     return render_template("error.html", message="Something went wront when trying to delete a review.")
+
+
+@app.route("/user/<username>")
+def user_page(username):
+    user_information = user.get_user_information(username)
+
+    return render_template("user.html", user_information=user_information, username=username)

@@ -20,6 +20,7 @@
 
 <hr>
 
+{% if session.username %}
 <form action="/category/{{review_item.category}}/{{review_item.id}}" method="POST">
     <p>Rating <br>
         <input type="number" min="1" max="10" name="rating">
@@ -30,8 +31,8 @@
     <input type="hidden" name="review_item_id" value="{{review_item.id}}">
     <button type="submit">Create Review</button>
 </form>
-
 <hr>
+{% endif %}
 
 <a href="/">Home</a>
 <a href="/category/{{review_item.category}}">{{review_item.category}}S</a>
