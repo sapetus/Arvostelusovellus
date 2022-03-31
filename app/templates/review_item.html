@@ -11,6 +11,9 @@
 {% for review in reviews %}
 <p>{{review.text}}</p>
 <p>Rating: {{review.rating}}</p>
+{% if admin %}
+<a href="/delete_review/{{review.id}}">Delete review</a>
+{% endif %}
 <br>
 {% endfor %}
 

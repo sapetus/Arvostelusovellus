@@ -59,6 +59,7 @@ def category(category):
     sql = "SELECT name, id FROM review_item WHERE category=:category"
     result = db.session.execute(sql, {"category": category})
     review_items = result.fetchall()
+
     return render_template("category.html", category=category, review_items=review_items)
 
 
@@ -78,7 +79,9 @@ def review_item(id, category):
         reviews_result = db.session.execute(reviews_query, {"id": id})
         reviews = reviews_result.fetchall()
 
-        return render_template("review_item.html", review_item=review_item, rating=rating, reviews=reviews)
+        admin = user.is_admin(session.setdefault("username", None))
+
+        return render_template("review_item.html", review_item=review_item, rating=rating, reviews=reviews, admin=admin)
     if request.method == "POST":
         rating = int(request.form["rating"])
         text = request.form["review"]
@@ -88,4 +91,15 @@ def review_item(id, category):
         if len(text) > 1000:
             return render_template("error.html", message="Review has a maximum length of 1000 characters.")
         if review.create(rating, text, review_item_id):
-            return render_template("error.html", message="creation successful")
+            return redirect(request.url)
+
+
+@app.route("/delete_review/<int:id>")
+def delete_review(id):
+    admin = user.is_admin(session.setdefault("username", None))
+
+    if admin:
+        if review.delete(id):
+            return redirect("/")
+
+    return render_template("error.html", message="Something went wront when trying to delete a review.")
