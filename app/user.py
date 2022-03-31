@@ -30,6 +30,7 @@ def login(username, password):
 
 
 def is_admin(username):
+    print(username)
     if not username:
         return False
         

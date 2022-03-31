@@ -1,5 +1,23 @@
 <h1>Category: {{category}}</h1>
 
+{% if admin %}
+<form action="/category/{{category}}" method="POST">
+    <p>Name <br>
+        <input type="text" name="name" maxlength="500">
+    </p>
+    <p>Publication date <br>
+        <input type="date" name="publication_date">
+    </p>
+    <p>Description <br>
+        <textarea name="description" cols="40" rows="4" maxlength="1000"></textarea>
+    </p>
+    <input type="hidden" name="category" value="{{category}}">
+    <button type="submit">Create</button>
+</form>
+{% endif %}
+
+<hr>
+
 <ul>
     {% for review_item in review_items %}
     <a href="/category/{{category}}/{{review_item.id}}">

@@ -3,7 +3,7 @@ from flask import render_template, redirect, request, session
 from db import db
 import user
 import review
-
+import review_item
 
 @app.route("/")
 def index():
@@ -54,17 +54,34 @@ def register():
             return render_template("error.html", message="Registration failed, please try again.")
 
 
-@app.route("/category/<category>")
+@app.route("/category/<category>", methods=["POST", "GET"])
 def category(category):
-    sql = "SELECT name, id FROM review_item WHERE category=:category"
-    result = db.session.execute(sql, {"category": category})
-    review_items = result.fetchall()
+    if request.method == "GET":
+        sql = "SELECT name, id FROM review_item WHERE category=:category"
+        result = db.session.execute(sql, {"category": category})
+        review_items = result.fetchall()
 
-    return render_template("category.html", category=category, review_items=review_items)
+        admin = user.is_admin(session.setdefault("username", None))
+
+        return render_template("category.html", category=category, review_items=review_items, admin=admin)
+    if request.method == "POST":
+        name = request.form["name"]
+        publication_date = request.form["publication_date"]
+        description = request.form["description"]
+        item_category = request.form["category"]
+
+        if len(description) > 1000:
+            return render_template("error.html", message="Description has a maximum length of 1000 characters.")
+        if len(name) > 500:
+            return render_template("error.html", message="Name has a maximum length of 500 characters.")
+        if review_item.create(name, publication_date, item_category, description):
+            return redirect(request.url)
+
+        return render_template("error.html", message="Something went wrong when trying to create a new review item.")
 
 
 @app.route("/category/<category>/<int:id>", methods=["POST", "GET"])
-def review_item(id, category):
+def item(id, category):
     if request.method == "GET":
         #Possible to merge these queries?
         item_query = "SELECT * FROM review_item WHERE id=:id"
@@ -86,12 +103,15 @@ def review_item(id, category):
         rating = int(request.form["rating"])
         text = request.form["review"]
         review_item_id = request.form["review_item_id"]
+
         if rating > 10 or rating < 1:
             return render_template("error.html", message="Rating needs to be between 1 and 10.")
         if len(text) > 1000:
             return render_template("error.html", message="Review has a maximum length of 1000 characters.")
         if review.create(rating, text, review_item_id):
             return redirect(request.url)
+
+        return render_template("error.html", message="Something went wrong when trying to create a review.")
 
 
 @app.route("/delete_review/<int:id>")
