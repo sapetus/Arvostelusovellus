@@ -1,3 +1,4 @@
+from flask import session
 from werkzeug.security import check_password_hash, generate_password_hash
 from db import db
 
@@ -22,6 +23,18 @@ def login(username, password):
         return False
     else:
         if check_password_hash(user.password_hash, password):
+            session["username"] = username
             return True
         else:
             return False
+
+
+def is_admin(username):
+    if not username:
+        return False
+        
+    sql = "SELECT is_admin FROM user_account WHERE username=:username"
+    result = db.session.execute(sql, {"username": username})
+    user = result.fetchone()
+
+    return user.is_admin

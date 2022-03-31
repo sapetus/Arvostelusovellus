@@ -1,5 +1,9 @@
 <h1>Index</h1>
 
+{% if admin %}
+<p>This user is an admin</p>
+{% endif %}
+
 <ul>
   {% for category in categories %}
   <a href="/category/{{category}}">
@@ -9,4 +13,7 @@
 </ul>
 
 <a href="/login">Login</a>
+{% if session.username %}
+<a href="/logout">Logout</a>
+{% endif %}
 <a href="/register">Register</a>

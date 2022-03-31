@@ -1,5 +1,5 @@
 from app import app
-from flask import render_template, redirect, request
+from flask import render_template, redirect, request, session
 from db import db
 import user
 import review
@@ -12,7 +12,9 @@ def index():
     data = result.fetchone()[0]
     data = data[1:-1]
     categories = data.split(",")
-    return render_template("index.html", categories=categories)
+    admin = user.is_admin(session.setdefault("username", None))
+
+    return render_template("index.html", categories=categories, admin=admin)
 
 
 @app.route("/login", methods=["POST", "GET"])
@@ -26,6 +28,12 @@ def login():
             return redirect("/")
         else:
             return render_template("error.html", message="Wrong credentials")
+
+
+@app.route("/logout")
+def logout():
+    del session["username"]
+    return redirect("/")
 
 
 @app.route("/register", methods=["POST", "GET"])
