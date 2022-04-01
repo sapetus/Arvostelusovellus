@@ -4,7 +4,10 @@ from db import db
 def get_profile_picture(id):
     sql = "SELECT picture FROM picture WHERE user_account_id=:user_account_id"
     result = db.session.execute(sql, {"user_account_id": id})
-    picture = result.fetchone()[0]
+    picture = result.fetchone()
+    
+    if picture:
+        return picture[0]
 
     return picture
 

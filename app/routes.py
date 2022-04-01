@@ -1,4 +1,5 @@
 import base64
+from re import I
 from app import app
 from flask import make_response, render_template, redirect, request, session
 from db import db
@@ -54,7 +55,7 @@ def register():
 def category(category):
     if request.method == "GET":
         sql = "SELECT name, id FROM review_item WHERE category=:category"
-        result = db.session.execute(sql, {"category": category})
+        result = db.session.execute(sql, {"category": category.upper()})
         review_items = result.fetchall()
 
         admin = user.is_admin(session.setdefault("username", None))
@@ -131,14 +132,16 @@ def user_page(username):
     if session.get("username", None) == username:
         allowed_to_modify = True
 
-    encoded_picture = base64.b64encode(bytes(profile_picture)).decode('utf-8')
-
-    response = make_response(bytes(profile_picture))
-    response.headers.set("Content-Type", "image/jpg")
-
-    return render_template("user.html", user_information=user_information,
-                           username=username, reviews=reviews, allowed_to_modify=allowed_to_modify,
-                           profile_picture=encoded_picture)
+    if profile_picture: 
+        encoded_picture = base64.b64encode(bytes(profile_picture)).decode('utf-8')
+        response = make_response(bytes(profile_picture))
+        response.headers.set("Content-Type", "image/jpg")
+        return render_template("user.html", user_information=user_information,
+                            username=username, reviews=reviews, allowed_to_modify=allowed_to_modify,
+                            profile_picture=encoded_picture)
+    else:
+        return render_template("user.html", user_information=user_information,
+                            username=username, reviews=reviews, allowed_to_modify=allowed_to_modify)
 
 
 @app.route("/user/<username>/modify", methods=["POST", "GET"])
