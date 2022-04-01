@@ -1,5 +1,4 @@
 import base64
-import profile
 from app import app
 from flask import make_response, render_template, redirect, request, session
 from db import db
