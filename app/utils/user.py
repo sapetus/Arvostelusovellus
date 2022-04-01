@@ -2,11 +2,11 @@ from flask import session
 from werkzeug.security import check_password_hash, generate_password_hash
 from db import db
 
-
+# EVERY USER IS GIVEN ADMIN STATUS FOR NOW! EASIER TO TEST APP
 def register(username, password):
     password_hash = generate_password_hash(password)
     try:
-        sql = "INSERT INTO user_account (username, password_hash, is_admin) VALUES (:username, :password_hash, false)"
+        sql = "INSERT INTO user_account (username, password_hash, is_admin) VALUES (:username, :password_hash, true)"
         db.session.execute(
             sql, {"username": username, "password_hash": password_hash})
         db.session.commit()
