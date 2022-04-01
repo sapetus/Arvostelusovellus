@@ -71,7 +71,7 @@ def category(category):
             return render_template("error.html", message="Description has a maximum length of 1000 characters.")
         if len(name) > 500:
             return render_template("error.html", message="Name has a maximum length of 500 characters.")
-        if review_item.create(name, publication_date, item_category, description):
+        if review_item.create(name, publication_date, item_category.upper(), description):
             return redirect(request.url)
 
         return render_template("error.html", message="Something went wrong when trying to create a new review item.")
