@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <title>Rating App</title>
+
+  <h1>Rating App</h1>
+
+  <nav>
+    <a href="/">Home</a>
+    {% if not session.username %}
+    <a href="/login">Login</a>
+    <a href="/register">Register</a>
+    {% endif %}
+    {% if session.username %}
+    <a href="/logout">Logout</a>
+    <a href="/user/{{session.username}}">Profile</a>
+    {% endif %}
+  </nav>
+
+  <hr>
+
+  {% block content %}{% endblock %}
+
+  <hr>
+</body>
+
+</html>

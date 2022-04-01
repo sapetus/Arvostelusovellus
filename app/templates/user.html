@@ -1,11 +1,21 @@
+{% extends "layout.html" %}
+
+{% block content%}
 <h1>User Page</h1>
 
 <h3>{{username}}</h3>
 
-{% for data in user_information %}
-<p>{{data.key}}: {{data.value}}</p>
-{% endfor%}
+{% if profile_picture %}
+<img src="data:;base64,{{profile_picture}}" alt="Users profile picture" width="auto" height="200px">
+{% endif %}
 
+{% for information in user_information %}
+<p>{{information.key}}: {{information.value}}</p>
+{% endfor %}
+
+{% if allowed_to_modify %}
+<a href="/user/{{username}}/modify">Modify</a>
+{% endif %}
 <hr>
 
 {% for review in reviews%}
@@ -18,4 +28,4 @@
 <hr>
 {% endfor %}
 
-<a href="/">Home</a>
+{% endblock %}

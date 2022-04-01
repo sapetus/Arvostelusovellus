@@ -1,3 +1,6 @@
+{% extends "layout.html" %}
+
+{% block content %}
 <h1>Index</h1>
 
 {% if admin %}
@@ -5,19 +8,11 @@
 {% endif %}
 
 <ul>
-  {% for category in categories %}
-  <a href="/category/{{category}}">
-    <li>{{ category }}S</li>
-  </a>
-  {% endfor %}
+    {% for category in categories %}
+    <a href="/category/{{category}}">
+        <li>{{ category }}s</li>
+    </a>
+    {% endfor %}
 </ul>
 
-{% if not session.username%}
-<a href="/login">Login</a>
-<a href="/register">Register</a>
-{% endif %}
-
-{% if session.username %}
-<a href="/logout">Logout</a>
-<a href="/user/{{session.username}}">Profile</a>
-{% endif %}
+{% endblock %}

@@ -1,3 +1,6 @@
+{% extends "layout.html" %}
+
+{% block content%}
 <h1>Review Item</h1>
 
 <p>Name: {{review_item.name}}</p>
@@ -37,5 +40,5 @@
 <hr>
 {% endif %}
 
-<a href="/">Home</a>
 <a href="/category/{{review_item.category}}">{{review_item.category}}S</a>
+{% endblock %}

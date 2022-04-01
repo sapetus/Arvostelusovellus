@@ -1,5 +1,7 @@
+{% extends "layout.html" %}
+
+{% block content%}
 <h1>Login Page</h1>
-<a href="/">Home</a>
 
 <form action="/login" method="POST">
 	<p>Username <br>
@@ -10,3 +12,4 @@
 	</p>
 	<button type="submit">Log In</button>
 </form>
+{% endblock %}

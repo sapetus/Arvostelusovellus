@@ -1,3 +1,6 @@
+{% extends "layout.html" %}
+
+{% block content %}
 <h1>Category: {{category}}</h1>
 
 {% if admin %}
@@ -25,5 +28,4 @@
     </a>
     {% endfor %}
 </ul>
-
-<a href="/">Home</a>
+{% endblock %}

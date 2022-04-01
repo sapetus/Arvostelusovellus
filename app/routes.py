@@ -1,21 +1,17 @@
+import base64
+import profile
 from app import app
-from flask import render_template, redirect, request, session
+from flask import make_response, render_template, redirect, request, session
 from db import db
-import user
-import review
-import review_item
+from utils import user, review, review_item, categories, picture
 
 
 @app.route("/")
 def index():
-    sql = "SELECT enum_range(NULL::CATEGORY)"
-    result = db.session.execute(sql)
-    data = result.fetchone()[0]
-    data = data[1:-1]
-    categories = data.split(",")
+    cats = categories.get_categories()
     admin = user.is_admin(session.setdefault("username", None))
 
-    return render_template("index.html", categories=categories, admin=admin)
+    return render_template("index.html", categories=cats, admin=admin)
 
 
 @app.route("/login", methods=["POST", "GET"])
@@ -84,20 +80,13 @@ def category(category):
 @app.route("/category/<category>/<int:id>", methods=["POST", "GET"])
 def item(id, category):
     if request.method == "GET":
-        # Possible to merge these queries?
-        item_query = "SELECT * FROM review_item WHERE id=:id"
-        item_result = db.session.execute(item_query, {"id": id})
-        review_item = item_result.fetchone()
-
-        rating_query = "SELECT AVG(rating)::numeric(10,1) FROM review WHERE review_item_id=:id"
-        rating_result = db.session.execute(rating_query, {"id": id})
-        rating = rating_result.fetchone()[0]
-
+        item = review_item.get_review_item(id)
+        rating = review_item.average_rating(id)
         reviews = review.get_reviews_for_review_item(id)
 
         admin = user.is_admin(session.setdefault("username", None))
 
-        return render_template("review_item.html", review_item=review_item, rating=rating, reviews=reviews, admin=admin)
+        return render_template("review_item.html", review_item=item, rating=rating, reviews=reviews, admin=admin)
     if request.method == "POST":
         rating = int(request.form["rating"])
         text = request.form["review"]
@@ -121,10 +110,11 @@ def delete_review(id):
     sql = "SELECT 1 FROM review \
            JOIN user_account ON review.user_account_id = user_account.id \
            WHERE user_account.username=:username AND review.id=:id"
-    result = db.session.execute(sql, {"username": session.get("username", None), "id": id})
+    result = db.session.execute(
+        sql, {"username": session.get("username", None), "id": id})
     same_user = result.fetchone()[0]
-    print(same_user)
 
+    # if the user trying to delete the review is admin or is the same user who created it, delete review
     if admin or same_user == 1:
         if review.delete(id):
             return redirect("/")
@@ -136,5 +126,54 @@ def delete_review(id):
 def user_page(username):
     user_information = user.get_user_information(username)
     reviews = review.get_reviews_for_user(username)
+    profile_picture = picture.get_profile_picture(user.user_id(username))
 
-    return render_template("user.html", user_information=user_information, username=username, reviews=reviews)
+    allowed_to_modify = False
+    if session.get("username", None) == username:
+        allowed_to_modify = True
+
+    encoded_picture = base64.b64encode(bytes(profile_picture)).decode('utf-8')
+
+    response = make_response(bytes(profile_picture))
+    response.headers.set("Content-Type", "image/jpg")
+
+    return render_template("user.html", user_information=user_information,
+                           username=username, reviews=reviews, allowed_to_modify=allowed_to_modify,
+                           profile_picture=encoded_picture)
+
+
+@app.route("/user/<username>/modify", methods=["POST", "GET"])
+def user_page_modify(username):
+    if not username == session.get("username", None):
+        return redirect("/")
+
+    if request.method == "GET":
+        cats = categories.get_categories()
+        return render_template("user_modify.html", username=username, categories=cats)
+
+    if request.method == "POST":
+        profile_picture = request.files["profile_picture"]
+        picture_data = profile_picture.read()
+        favourite_category = request.form["category"]
+
+        # change query to overwrite users old information (currently duplicates)
+        if not user.add_user_information("favourite_category", favourite_category, user.user_id(username)):
+            return render_template("error.html", message="Something went wrong when trying to save user information")
+
+        # implement some logic here to remove users old picture 
+        if profile_picture.filename:
+            # if larger than 1MB
+            if len(picture_data) > 1000*1024:
+                return render_template("error.html", message="File has maximum size of 1MB")
+            # if file is of allowed type
+            content_type = profile_picture.content_type
+            if content_type.endswith('jpeg') or content_type.endswith('png') or content_type.endswith('jpg'):
+                # try to save picture, if failed, return error page
+                if not picture.save_profile_picture(user.user_id(username), picture_data):
+                    return render_template("error.html", message="Something went wrong when trying to save profile picture")
+                else:
+                    return redirect("/")
+            else:
+                return render_template("error.html", message="File needs to be either JPG/JPEG or PNG")
+
+        return redirect("/")

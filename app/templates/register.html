@@ -1,5 +1,7 @@
+{% extends "layout.html" %}
+
+{% block content%}
 <h1>Register page</h1>
-<a href="/">Home</a>
 
 <form action="/register" method="POST">
     <p>Username: <br>
@@ -13,3 +15,4 @@
     </p>
     <button type="submit">Create User</button>
 </form>
+{% endblock %}
