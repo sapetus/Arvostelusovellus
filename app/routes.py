@@ -30,6 +30,7 @@ def login():
 @app.route("/logout")
 def logout():
     del session["username"]
+    del session["token"]
     return redirect("/")
 
 
@@ -41,6 +42,12 @@ def register():
         username = request.form["username"]
         password = request.form["password"]
         password_confirmation = request.form["password_confirmation"]
+
+        if (len(username) > 20 or len(username) < 2) or (len(password) > 50 or len(password) < 5):
+            return render_template("error.html",
+                                   message="Username needs to be between 2-20 characters and \
+                                            password needs to be between 5-50 characters.")
+
         if not password or not username:
             return render_template("error.html", message="Username and password are required!")
         if password != password_confirmation:
@@ -62,6 +69,9 @@ def category(category):
 
         return render_template("category.html", category=category, review_items=review_items, admin=admin)
     if request.method == "POST":
+        if not user.check_user(request.form["token"]):
+            return render_template("error.html", message="Forbidden action")
+
         name = request.form["name"]
         publication_date = request.form["publication_date"]
         description = request.form["description"]
@@ -88,16 +98,19 @@ def item(id, category):
 
         return render_template("review_item.html", review_item=item, rating=rating, reviews=reviews, admin=admin)
     if request.method == "POST":
-        rating = int(request.form["rating"])
+        if not user.check_user(request.form["token"]):
+            return render_template("error.html", message="Forbidden action")
+
+        rating = request.form["rating"]
         text = request.form["review"]
         review_item_id = request.form["review_item_id"]
         user_id = user.user_id(session["username"])
 
-        if rating > 10 or rating < 1:
+        if rating == "" or int(rating) > 10 or int(rating) < 1:
             return render_template("error.html", message="Rating needs to be between 1 and 10.")
         if len(text) > 1000:
             return render_template("error.html", message="Review has a maximum length of 1000 characters.")
-        if review.create(rating, text, review_item_id, user_id):
+        if review.create(int(rating), text, review_item_id, user_id):
             return redirect(request.url)
 
         return render_template("error.html", message="Something went wrong when trying to create a review.")
@@ -132,16 +145,17 @@ def user_page(username):
     if session.get("username", None) == username:
         allowed_to_modify = True
 
-    if profile_picture: 
-        encoded_picture = base64.b64encode(bytes(profile_picture)).decode('utf-8')
+    if profile_picture:
+        encoded_picture = base64.b64encode(
+            bytes(profile_picture)).decode('utf-8')
         response = make_response(bytes(profile_picture))
         response.headers.set("Content-Type", "image/jpg")
         return render_template("user.html", user_information=user_information,
-                            username=username, reviews=reviews, allowed_to_modify=allowed_to_modify,
-                            profile_picture=encoded_picture)
+                               username=username, reviews=reviews, allowed_to_modify=allowed_to_modify,
+                               profile_picture=encoded_picture)
     else:
         return render_template("user.html", user_information=user_information,
-                            username=username, reviews=reviews, allowed_to_modify=allowed_to_modify)
+                               username=username, reviews=reviews, allowed_to_modify=allowed_to_modify)
 
 
 @app.route("/user/<username>/modify", methods=["POST", "GET"])
@@ -154,15 +168,21 @@ def user_page_modify(username):
         return render_template("user_modify.html", username=username, categories=cats)
 
     if request.method == "POST":
+        if not user.check_user(request.form["token"]):
+            return render_template("error.html", message="Forbidden action")
+
         profile_picture = request.files["profile_picture"]
         picture_data = profile_picture.read()
         favourite_category = request.form["category"]
 
-        # change query to overwrite users old information (currently duplicates)
-        if not user.add_user_information("favourite_category", favourite_category, user.user_id(username)):
-            return render_template("error.html", message="Something went wrong when trying to save user information")
+        if user.get_user_information_by_key("favourite_category", user.user_id(username)):
+            if not user.update_user_information("favourite_category", favourite_category, user.user_id(username)):
+                return render_template("error.html", message="Something went wrong when trying to update user information")
+        else:
+            if not user.add_user_information("favourite_category", favourite_category, user.user_id(username)):
+                return render_template("error.html", message="Something went wrong when trying to save user information")
 
-        # implement some logic here to remove users old picture 
+        # This is a mess. Try to clean it up
         if profile_picture.filename:
             # if larger than 1MB
             if len(picture_data) > 1000*1024:
@@ -170,11 +190,16 @@ def user_page_modify(username):
             # if file is of allowed type
             content_type = profile_picture.content_type
             if content_type.endswith('jpeg') or content_type.endswith('png') or content_type.endswith('jpg'):
-                # try to save picture, if failed, return error page
-                if not picture.save_profile_picture(user.user_id(username), picture_data):
-                    return render_template("error.html", message="Something went wrong when trying to save profile picture")
+                # if this user already has a picture, replace it
+                if picture.get_profile_picture(user.user_id(username)):
+                    if not picture.update_profile_picture(user.user_id(username), picture_data):
+                        return render_template("error.html", message="Something went wrong when trying to update profile picture")
                 else:
-                    return redirect("/")
+                    # try to save picture, if failed, return error page
+                    if not picture.save_profile_picture(user.user_id(username), picture_data):
+                        return render_template("error.html", message="Something went wrong when trying to save profile picture")
+                    else:
+                        return redirect("/")
             else:
                 return render_template("error.html", message="File needs to be either JPG/JPEG or PNG")
 

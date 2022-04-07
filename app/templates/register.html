@@ -5,13 +5,13 @@
 
 <form action="/register" method="POST">
     <p>Username: <br>
-        <input type="text" name="username">
+        <input type="text" name="username" maxlength="20" minlength="2">
     </p>
     <p>Password: <br>
-        <input type="password" name="password">
+        <input type="password" name="password" maxlength="50" minlength="5">
     </p>
     <p>Confirm Password: <br>
-        <input type="password" name="password_confirmation">
+        <input type="password" name="password_confirmation" maxlength="50" minlength="5">
     </p>
     <button type="submit">Create User</button>
 </form>
