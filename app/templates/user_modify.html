@@ -3,11 +3,19 @@
 {% block content %}
 <h1>Modifying {{username}}</h1>
 
+{% if error %}
+<p>{{error}}</p>
+{% endif %}
+
 <form action="/user/{{username}}/modify" method="POST" enctype="multipart/form-data">
   <label>Favourite category:</label>
   <select name="category">
     {% for category in categories %}
-    <option value="{{category}}">{{category}}</option>
+    {% if category == current_category %}
+    <option selected value="{{category}}">{{category}}s</option>
+    {% else %}
+    <option value="{{category}}">{{category}}s</option>
+    {% endif %}
     {% endfor %}
   </select>
   <br>

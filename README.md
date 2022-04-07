@@ -19,11 +19,6 @@ Ominaisuuksia:
 
 Sovelluksen perustoiminnallisuudet toimivat suurinpiirtein.
 
-Ongelmia:
-
-* Profiilikuvan vaihto ei onnistu (Tietokanta ei poista edellistä profiilikuvaa)
-* Suosikki kategorian vaihto ei onnistu (Tietokanta ei poista edellistä suosikki kategoriaa)
-
 Käyttöohjeita:
 
 * Yläpalkista pääsee navigoimaan sivua.

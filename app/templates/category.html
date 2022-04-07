@@ -4,15 +4,19 @@
 <h1>Category: {{category}}</h1>
 
 {% if admin %}
+{% if error %}
+<p>{{error}}</p>
+{% endif %}
+
 <form action="/category/{{category}}" method="POST">
     <p>Name <br>
-        <input type="text" name="name" maxlength="500">
+        <input type="text" name="name" maxlength="500" len="1">
     </p>
     <p>Publication date <br>
         <input type="date" name="publication_date">
     </p>
     <p>Description <br>
-        <textarea name="description" cols="40" rows="4" maxlength="1000"></textarea>
+        <textarea name="description" cols="40" rows="4" maxlength="1000" minlength="10"></textarea>
     </p>
     <input type="hidden" name="category" value="{{category}}">
     <input type="hidden" name="token" value="{{session.token}}">

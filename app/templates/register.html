@@ -3,6 +3,10 @@
 {% block content%}
 <h1>Register page</h1>
 
+{% if error %}
+<p>{{error}}</p>
+{% endif %}
+
 <form action="/register" method="POST">
     <p>Username: <br>
         <input type="text" name="username" maxlength="20" minlength="2">

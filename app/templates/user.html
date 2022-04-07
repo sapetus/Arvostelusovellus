@@ -10,7 +10,7 @@
 {% endif %}
 
 {% for information in user_information %}
-<p>{{information.key}}: {{information.value}}</p>
+<p>{{information.key.replace("_", " ").title()}}: {{information.value}}s</p>
 {% endfor %}
 
 {% if allowed_to_modify %}

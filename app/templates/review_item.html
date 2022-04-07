@@ -18,7 +18,7 @@
     <p>Rating: {{review.rating}}</p>
     <p>Review by: <a href="/user/{{review.username}}">{{review.username}}</a></p>
     {% if admin or session.username == review.username %}
-    <a href="/delete_review/{{review.id}}">Delete review</a>
+    <a href="/delete_review/{{review.id}}?category={{category}}&item={{review_item.id}}">Delete review</a>
     {% endif %}
     <br>
 </div>
@@ -27,12 +27,15 @@
 <hr>
 
 {% if session.username %}
+{% if error %}
+<p>{{error}}</p>
+{% endif %}
 <form action="/category/{{review_item.category}}/{{review_item.id}}" method="POST">
     <p>Rating <br>
         <input type="number" min="1" max="10" name="rating">
     </p>
     <p>Review <br>
-        <textarea name="review" cols="40" rows="4" maxlength="1000"></textarea>
+        <textarea name="review" cols="40" rows="4" maxlength="1000" minlength="10"></textarea>
     </p>
     <input type="hidden" name="review_item_id" value="{{review_item.id}}">
     <input type="hidden" name="token" value="{{session.token}}">

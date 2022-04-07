@@ -1,5 +1,4 @@
 import base64
-from re import I
 from app import app
 from flask import make_response, render_template, redirect, request, session
 from db import db
@@ -24,7 +23,7 @@ def login():
         if user.login(username, password):
             return redirect("/")
         else:
-            return render_template("error.html", message="Wrong credentials")
+            return render_template("login.html", error="Wrong credentials")
 
 
 @app.route("/logout")
@@ -44,62 +43,68 @@ def register():
         password_confirmation = request.form["password_confirmation"]
 
         if (len(username) > 20 or len(username) < 2) or (len(password) > 50 or len(password) < 5):
-            return render_template("error.html",
-                                   message="Username needs to be between 2-20 characters and \
+            return render_template("register.html",
+                                   error="Username needs to be between 2-20 characters and \
                                             password needs to be between 5-50 characters.")
 
         if not password or not username:
-            return render_template("error.html", message="Username and password are required!")
+            return render_template("register.html", error="Username and password are required!")
         if password != password_confirmation:
-            return render_template("error.html", message="Passwords need to match!")
+            return render_template("register.html", error="Passwords need to match!")
         if user.register(username, password):
             return redirect("/")
         else:
-            return render_template("error.html", message="Registration failed, please try again.")
+            return render_template("register.html", error="Registration failed, please try again.")
 
 
 @app.route("/category/<category>", methods=["POST", "GET"])
 def category(category):
+    sql = "SELECT name, id FROM review_item WHERE category=:category"
+    result = db.session.execute(sql, {"category": category.upper()})
+    review_items = result.fetchall()
+
+    admin = user.is_admin(session.setdefault("username", None))
+
     if request.method == "GET":
-        sql = "SELECT name, id FROM review_item WHERE category=:category"
-        result = db.session.execute(sql, {"category": category.upper()})
-        review_items = result.fetchall()
-
-        admin = user.is_admin(session.setdefault("username", None))
-
         return render_template("category.html", category=category, review_items=review_items, admin=admin)
     if request.method == "POST":
         if not user.check_user(request.form["token"]):
-            return render_template("error.html", message="Forbidden action")
+            return render_template("category.html", error="Forbidden action",
+                                   category=category, review_items=review_items, admin=admin)
 
         name = request.form["name"]
         publication_date = request.form["publication_date"]
         description = request.form["description"]
         item_category = request.form["category"]
 
-        if len(description) > 1000:
-            return render_template("error.html", message="Description has a maximum length of 1000 characters.")
-        if len(name) > 500:
-            return render_template("error.html", message="Name has a maximum length of 500 characters.")
+        if len(description) > 1000 or len(description) < 10:
+            return render_template("category.html", error="Description has a length of 10-1000 characters.",
+                                   category=category, review_items=review_items, admin=admin)
+        if len(name) > 500 or len(name) < 1:
+            return render_template("category.html", error="Name has a length of 1-500 characters.",
+                                   category=category, review_items=review_items, admin=admin)
         if review_item.create(name, publication_date, item_category.upper(), description):
             return redirect(request.url)
 
-        return render_template("error.html", message="Something went wrong when trying to create a new review item.")
+        return render_template("category.html", error="Something went wrong when trying to create a new review item.",
+                               category=category, review_items=review_items, admin=admin)
 
 
 @app.route("/category/<category>/<int:id>", methods=["POST", "GET"])
 def item(id, category):
+    item = review_item.get_review_item(id)
+    rating = review_item.average_rating(id)
+    reviews = review.get_reviews_for_review_item(id)
+
+    admin = user.is_admin(session.setdefault("username", None))
+
     if request.method == "GET":
-        item = review_item.get_review_item(id)
-        rating = review_item.average_rating(id)
-        reviews = review.get_reviews_for_review_item(id)
-
-        admin = user.is_admin(session.setdefault("username", None))
-
-        return render_template("review_item.html", review_item=item, rating=rating, reviews=reviews, admin=admin)
+        return render_template("review_item.html", review_item=item, rating=rating,
+                               reviews=reviews, admin=admin, category=category)
     if request.method == "POST":
         if not user.check_user(request.form["token"]):
-            return render_template("error.html", message="Forbidden action")
+            return render_template("review_item.html", error="Forbidden action", review_item=item,
+                                   rating=rating, reviews=reviews, admin=admin, category=category)
 
         rating = request.form["rating"]
         text = request.form["review"]
@@ -107,15 +112,19 @@ def item(id, category):
         user_id = user.user_id(session["username"])
 
         if rating == "" or int(rating) > 10 or int(rating) < 1:
-            return render_template("error.html", message="Rating needs to be between 1 and 10.")
-        if len(text) > 1000:
-            return render_template("error.html", message="Review has a maximum length of 1000 characters.")
+            return render_template("review_item.html", error="Rating needs to be between 1 and 10.",
+                                   review_item=item, rating=rating, reviews=reviews, admin=admin, category=category)
+        if len(text) > 1000 or len(text) < 10:
+            return render_template("review_item.html", error="Review has a length of 10-1000 characters.",
+                                   review_item=item, rating=rating, reviews=reviews, admin=admin, category=category)
         if review.create(int(rating), text, review_item_id, user_id):
             return redirect(request.url)
 
-        return render_template("error.html", message="Something went wrong when trying to create a review.")
+        return render_template("review_item.html", error="Something went wrong when trying to create a review.",
+                               review_item=item, rating=rating, reviews=reviews, admin=admin, category=category)
 
 
+# this needs to redirect to the given review item's page, currently redirects back to frontpage
 @app.route("/delete_review/<int:id>")
 def delete_review(id):
     admin = user.is_admin(session.setdefault("username", None))
@@ -130,7 +139,10 @@ def delete_review(id):
     # if the user trying to delete the review is admin or is the same user who created it, delete review
     if admin or same_user == 1:
         if review.delete(id):
-            return redirect("/")
+            category = request.args.get("category")
+            item = request.args.get("item")
+            url = "/category/" + str(category) + "/" + str(item)
+            return redirect(url)
 
     return render_template("error.html", message="Something went wront when trying to delete a review.")
 
@@ -163,9 +175,12 @@ def user_page_modify(username):
     if not username == session.get("username", None):
         return redirect("/")
 
+    cats = categories.get_categories()
+    current_category = user.get_user_information_by_key("favourite_category",
+                                                                  user.user_id(username))
+
     if request.method == "GET":
-        cats = categories.get_categories()
-        return render_template("user_modify.html", username=username, categories=cats)
+        return render_template("user_modify.html", username=username, categories=cats, current_category=current_category)
 
     if request.method == "POST":
         if not user.check_user(request.form["token"]):
@@ -175,7 +190,7 @@ def user_page_modify(username):
         picture_data = profile_picture.read()
         favourite_category = request.form["category"]
 
-        if user.get_user_information_by_key("favourite_category", user.user_id(username)):
+        if current_category:
             if not user.update_user_information("favourite_category", favourite_category, user.user_id(username)):
                 return render_template("error.html", message="Something went wrong when trying to update user information")
         else:
@@ -186,7 +201,8 @@ def user_page_modify(username):
         if profile_picture.filename:
             # if larger than 1MB
             if len(picture_data) > 1000*1024:
-                return render_template("error.html", message="File has maximum size of 1MB")
+                return render_template("user_modify.html", error="File has maximum size of 1MB",
+                                       username=username, categories=cats, current_category=current_category)
             # if file is of allowed type
             content_type = profile_picture.content_type
             if content_type.endswith('jpeg') or content_type.endswith('png') or content_type.endswith('jpg'):
@@ -201,6 +217,8 @@ def user_page_modify(username):
                     else:
                         return redirect("/")
             else:
-                return render_template("error.html", message="File needs to be either JPG/JPEG or PNG")
+                return render_template("user_modify.html", message="File needs to be either JPG/JPEG or PNG",
+                                       username=username, categories=cats, current_category=current_category)
 
-        return redirect("/")
+        url = "/user/" + str(username)
+        return redirect(url)

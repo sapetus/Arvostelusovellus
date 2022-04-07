@@ -72,7 +72,7 @@ def get_user_information(username):
 def get_user_information_by_key(key, id):
     sql = "SELECT value FROM user_information WHERE key=:key AND user_account_id=:id"
     result = db.session.execute(sql, {"key":key, "id":id})
-    value = result.fetchone()
+    value = result.fetchone()[0]
 
     return value
 

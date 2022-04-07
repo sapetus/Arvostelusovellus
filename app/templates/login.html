@@ -3,6 +3,10 @@
 {% block content%}
 <h1>Login Page</h1>
 
+{% if error %}
+<p>{{error}}</p>
+{% endif %}
+
 <form action="/login" method="POST">
 	<p>Username <br>
 		<input type="text" name="username">
