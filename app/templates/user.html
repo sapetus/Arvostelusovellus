@@ -9,19 +9,29 @@
 <img src="data:;base64,{{profile_picture}}" alt="Users profile picture" width="auto" height="200px">
 {% endif %}
 
+{% if user_information %}
 {% for information in user_information %}
 <p>{{information.key.replace("_", " ").title()}}: {{information.value}}s</p>
 {% endfor %}
+{% else %}
+<p>No information</p>
+{% endif %}
 
 {% if allowed_to_modify %}
-<a href="/user/{{username}}/modify">Modify</a>
+<form action="/user/{{username}}/modify">
+	<button type="submit">Modify</button>
+</form>
+<form action="/user/{{username}}/delete" method="post">
+	<input type="hidden" name="token" value="{{session.token}}">
+	<button type="submit">Delete User</button>
+</form>
 {% endif %}
 <hr>
 
 {% for review in reviews%}
 <div>
 	<p>Category: {{review.category}}</p>
-	<p>Name: {{review.name}}</p>
+	<p>Name: <a href="/category/{{review.category}}/{{review.id}}">{{review.name}}</a></p>
 	<p>Review: {{review.text}}</p>
 	<p>Rating: {{review.rating}}</p>
 </div>

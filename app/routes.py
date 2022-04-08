@@ -1,8 +1,13 @@
 import base64
 from app import app
-from flask import make_response, render_template, redirect, request, session
+from flask import make_response, render_template, redirect, request, session, abort
 from db import db
 from utils import user, review, review_item, categories, picture
+
+
+@app.errorhandler(404)
+def error_404(error):
+    return render_template("error.html", message="Page you tried to reach does not exist")
 
 
 @app.route("/")
@@ -39,6 +44,10 @@ def register():
         return render_template("register.html")
     if request.method == "POST":
         username = request.form["username"]
+
+        if user.check_username(username):
+            return render_template("register.html", error="Username already taken")
+
         password = request.form["password"]
         password_confirmation = request.form["password_confirmation"]
 
@@ -59,10 +68,11 @@ def register():
 
 @app.route("/category/<category>", methods=["POST", "GET"])
 def category(category):
-    sql = "SELECT name, id FROM review_item WHERE category=:category"
-    result = db.session.execute(sql, {"category": category.upper()})
-    review_items = result.fetchall()
+    cats = categories.get_categories()
+    if not category.capitalize() in cats:
+        abort(404)
 
+    review_items = review_item.get_review_items_by_category(category)
     admin = user.is_admin(session.setdefault("username", None))
 
     if request.method == "GET":
@@ -93,6 +103,10 @@ def category(category):
 @app.route("/category/<category>/<int:id>", methods=["POST", "GET"])
 def item(id, category):
     item = review_item.get_review_item(id)
+
+    if not item:
+        abort(404)
+
     rating = review_item.average_rating(id)
     reviews = review.get_reviews_for_review_item(id)
 
@@ -124,7 +138,41 @@ def item(id, category):
                                review_item=item, rating=rating, reviews=reviews, admin=admin, category=category)
 
 
-# this needs to redirect to the given review item's page, currently redirects back to frontpage
+@app.route("/category/<category>/<int:id>/modify", methods=["POST", "GET"])
+def update_review_item(id, category):
+    admin = user.is_admin(session.setdefault("username", None))
+    token = user.check_user(request.args.get("token"))
+    print(token, admin)
+    if request.method == "GET":
+        if admin and token:
+            item = review_item.get_review_item(id)
+            return render_template("review_item_modify.html", review_item=item)
+        else:
+            return render_template("error.html", message="Forbidden action")
+    if request.method == "POST":
+        if admin and token:
+            if review_item.update(id):
+                return redirect("/category/" + str(category) + "/" + str(id))
+            else:
+                return render_template("error.html", message="Something went wront when trying to update review item")
+        else:
+            return render_template("error.html", message="Forbidden action")
+
+
+@app.route("/category/<category>/<int:id>/delete", methods=["POST"])
+def delete_review_item(id, category):
+    admin = user.is_admin(session.setdefault("username", None))
+    token = user.check_user(request.form["token"])
+
+    if admin and token:
+        if review_item.delete(id):
+            return redirect("/category/" + str(category))
+        else:
+            return render_template("error.html", message="Something went wrong when trying to delete review item")  
+    else:
+        return render_template("error.html", message="Forbidden action")
+
+
 @app.route("/delete_review/<int:id>")
 def delete_review(id):
     admin = user.is_admin(session.setdefault("username", None))
@@ -149,6 +197,9 @@ def delete_review(id):
 
 @app.route("/user/<username>")
 def user_page(username):
+    if not user.check_username(username):
+        abort(404)
+
     user_information = user.get_user_information(username)
     reviews = review.get_reviews_for_user(username)
     profile_picture = picture.get_profile_picture(user.user_id(username))
@@ -170,6 +221,17 @@ def user_page(username):
                                username=username, reviews=reviews, allowed_to_modify=allowed_to_modify)
 
 
+@app.route("/user/<username>/delete", methods=["POST"])
+def user_delete(username):
+    if (not username == session.get("username", None)) or (not user.check_user(request.form["token"])):
+        return render_template("error.html", message="Forbidden action")
+
+    if not user.delete_user(username):
+        return render_template("error.html", message="Could not delete given user")
+
+    return redirect("/")
+
+
 @app.route("/user/<username>/modify", methods=["POST", "GET"])
 def user_page_modify(username):
     if not username == session.get("username", None):
@@ -177,7 +239,7 @@ def user_page_modify(username):
 
     cats = categories.get_categories()
     current_category = user.get_user_information_by_key("favourite_category",
-                                                                  user.user_id(username))
+                                                        user.user_id(username))
 
     if request.method == "GET":
         return render_template("user_modify.html", username=username, categories=cats, current_category=current_category)

@@ -4,8 +4,8 @@ CREATE TABLE user_account (id SERIAL PRIMARY KEY, username TEXT UNIQUE, password
 
 CREATE TABLE review_item (id SERIAL PRIMARY KEY, category CATEGORY, name TEXT, publication_date DATE, description TEXT);
 
-CREATE TABLE review (id SERIAL PRIMARY KEY, user_account_id INTEGER REFERENCES user_account(id), review_item_id INTEGER REFERENCES review_item(id), rating INTEGER, text TEXT);
+CREATE TABLE review (id SERIAL PRIMARY KEY, user_account_id INTEGER REFERENCES user_account(id) ON DELETE CASCADE, review_item_id INTEGER REFERENCES review_item(id) ON DELETE CASCADE, rating INTEGER, text TEXT);
 
-CREATE TABLE picture (id SERIAL PRIMARY KEY, user_account_id INTEGER REFERENCES user_account(id), review_item_id INTEGER REFERENCES review_item(id), picture BYTEA);
+CREATE TABLE picture (id SERIAL PRIMARY KEY, user_account_id INTEGER REFERENCES user_account(id) ON DELETE CASCADE, review_item_id INTEGER REFERENCES review_item(id) ON DELETE CASCADE, picture BYTEA);
 
-CREATE TABLE user_information (id SERIAL PRIMARY KEY, user_account_id INTEGER REFERENCES user_account(id), key TEXT, value TEXT);
+CREATE TABLE user_information (id SERIAL PRIMARY KEY, user_account_id INTEGER REFERENCES user_account(id) ON DELETE CASCADE, key TEXT, value TEXT);

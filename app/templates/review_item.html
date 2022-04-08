@@ -8,6 +8,16 @@
 <p>Description: {{review_item.description}}</p>
 <p>Publication date: {{review_item.publication_date}}</p>
 <p>Category: {{review_item.category}}</p>
+{% if admin %}
+<form action="/category/{{category}}/{{review_item.id}}/modify">
+    <input type="hidden" name="token" value="{{session.token}}">
+    <button action="submit">Edit</button>
+</form>
+<form action="/category/{{category}}/{{review_item.id}}/delete" method="post">
+    <input type="hidden" name="token" value="{{session.token}}">
+    <button action="submit">Delete</button>
+</form>
+{% endif %}
 
 <hr>
 
@@ -43,6 +53,4 @@
 </form>
 <hr>
 {% endif %}
-
-<a href="/category/{{review_item.category}}">{{review_item.category}}S</a>
 {% endblock %}

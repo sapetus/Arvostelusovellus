@@ -36,7 +36,7 @@ def get_reviews_for_review_item(id):
 
 
 def get_reviews_for_user(username):
-    sql = "SELECT r.rating, r.text, ri.name, ri.category FROM review as r \
+    sql = "SELECT r.rating, r.text, ri.name, ri.category, ri.id FROM review as r \
            JOIN user_account as u ON r.user_account_id = u.id \
            JOIN review_item as ri ON r.review_item_id = ri.id \
            WHERE u.username=:username"
