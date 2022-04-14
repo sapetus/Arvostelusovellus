@@ -3,10 +3,6 @@
 {% block content %}
 <h1>Index</h1>
 
-{% if admin %}
-<p>This user is an admin</p>
-{% endif %}
-
 <ul>
     {% for category in categories %}
     <a href="/category/{{category}}">

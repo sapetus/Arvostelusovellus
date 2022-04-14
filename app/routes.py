@@ -131,6 +131,9 @@ def item(id, category):
         if len(text) > 1000 or len(text) < 10:
             return render_template("review_item.html", error="Review has a length of 10-1000 characters.",
                                    review_item=item, rating=rating, reviews=reviews, admin=admin, category=category)
+        if review.check_if_user_has_reviewed(user_id, review_item_id):
+            return render_template("review_item.html", error="You have already reviewd this item.",
+                                   review_item=item, rating=rating, reviews=reviews, admin=admin, category=category)
         if review.create(int(rating), text, review_item_id, user_id):
             return redirect(request.url)
 
@@ -173,7 +176,7 @@ def delete_review_item(id, category):
         if review_item.delete(id):
             return redirect("/category/" + str(category))
         else:
-            return render_template("error.html", message="Something went wrong when trying to delete review item")  
+            return render_template("error.html", message="Something went wrong when trying to delete review item")
     else:
         return render_template("error.html", message="Forbidden action")
 

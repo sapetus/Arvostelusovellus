@@ -1,0 +1,26 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: lightblue;
+}
+
+#root {
+    background-color: lightgray;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 2em;
+    width: 50%;
+    min-width: 30em;
+}
+
+hr {
+    width: 100%;
+    border-top: 1px solid black;
+    border-bottom: None;
+}

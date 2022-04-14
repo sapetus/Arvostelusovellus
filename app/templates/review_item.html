@@ -1,13 +1,12 @@
 {% extends "layout.html" %}
 
 {% block content%}
-<h1>Review Item</h1>
 
-<p>Name: {{review_item.name}}</p>
+<h3>{{review_item.name}}</h3>
+<p>{{review_item.description}}</p>
 <p>Rating: {{rating}}</p>
-<p>Description: {{review_item.description}}</p>
 <p>Publication date: {{review_item.publication_date}}</p>
-<p>Category: {{review_item.category}}</p>
+<p>Category: {{review_item.category.capitalize()}}</p>
 
 {% if admin %}
 <form action="/category/{{category}}/{{review_item.id}}/modify">
@@ -52,6 +51,5 @@
     <input type="hidden" name="token" value="{{session.token}}">
     <button type="submit">Create Review</button>
 </form>
-<hr>
 {% endif %}
 {% endblock %}
