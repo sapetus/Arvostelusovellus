@@ -8,6 +8,7 @@
 <p>Description: {{review_item.description}}</p>
 <p>Publication date: {{review_item.publication_date}}</p>
 <p>Category: {{review_item.category}}</p>
+
 {% if admin %}
 <form action="/category/{{category}}/{{review_item.id}}/modify">
     <input type="hidden" name="token" value="{{session.token}}">

@@ -24,8 +24,11 @@ def delete(id):
         return False
 
 
-def update(id):
+def update(name, description, publication_date, id):
     try:
+        sql = "UPDATE review_item SET name=:name, description=:description, publication_date=:publication_date WHERE id=:id"
+        db.session.execute(sql, {"name": name, "description": description, "publication_date": publication_date, "id": id})
+        db.session.commit()
         return True
     except:
         return False

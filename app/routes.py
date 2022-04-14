@@ -141,17 +141,22 @@ def item(id, category):
 @app.route("/category/<category>/<int:id>/modify", methods=["POST", "GET"])
 def update_review_item(id, category):
     admin = user.is_admin(session.setdefault("username", None))
-    token = user.check_user(request.args.get("token"))
-    print(token, admin)
+
     if request.method == "GET":
+        token = user.check_user(request.args.get("token"))
         if admin and token:
             item = review_item.get_review_item(id)
+            print(item)
             return render_template("review_item_modify.html", review_item=item)
         else:
             return render_template("error.html", message="Forbidden action")
     if request.method == "POST":
+        token = request.form["token"]
         if admin and token:
-            if review_item.update(id):
+            name = request.form["name"]
+            publication_date = request.form["publication_date"]
+            description = request.form["description"]
+            if review_item.update(name, description, publication_date, id):
                 return redirect("/category/" + str(category) + "/" + str(id))
             else:
                 return render_template("error.html", message="Something went wront when trying to update review item")

@@ -2,4 +2,19 @@
 {% block content %}
 <h1>Modify review item</h1>
 
+<form action="/category/{{review_item.category}}/{{review_item.id}}/modify" method="POST">
+    <p>Name <br>
+        <input type="text" name="name" maxlength="500" minlength="1" value="{{review_item.name}}">
+    </p>
+    <p>Publication date <br>
+        <input type="date" name="publication_date" value="{{review_item.publication_date}}">
+    </p>
+    <p>Description <br>
+        <textarea name="description" cols="40" rows="4" maxlength="1000" minlength="10">{{review_item.description}}</textarea>
+    </p>
+    <input type="hidden" name="category" value="{{review_item.category}}">
+    <input type="hidden" name="token" value="{{session.token}}">
+    <button type="submit">Update</button>
+</form>
+
 {% endblock %}
