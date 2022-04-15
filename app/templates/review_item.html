@@ -3,6 +3,9 @@
 {% block content%}
 
 <h3>{{review_item.name}}</h3>
+{% if picture %}
+<img src="data:;base64,{{picture}}" alt="Items picture" width="auto" height="200px">
+{% endif %}
 <p>{{review_item.description}}</p>
 <p>Rating: {{rating}}</p>
 <p>Publication date: {{review_item.publication_date}}</p>

@@ -85,19 +85,37 @@ def category(category):
         name = request.form["name"]
         publication_date = request.form["publication_date"]
         description = request.form["description"]
+        item_picture = request.files["picture"]
+        picture_data = item_picture.read()
         item_category = request.form["category"]
 
+        # check that inputs are valid and respond accordingly
         if len(description) > 1000 or len(description) < 10:
             return render_template("category.html", error="Description has a length of 10-1000 characters.",
                                    category=category, review_items=review_items, admin=admin)
         if len(name) > 500 or len(name) < 1:
             return render_template("category.html", error="Name has a length of 1-500 characters.",
                                    category=category, review_items=review_items, admin=admin)
-        if review_item.create(name, publication_date, item_category.upper(), description):
-            return redirect(request.url)
-
-        return render_template("category.html", error="Something went wrong when trying to create a new review item.",
-                               category=category, review_items=review_items, admin=admin)
+        # if creation was successful, save picture
+        item_id = review_item.create(
+            name, publication_date, item_category.upper(), description)
+        if item_id:
+            # check that given picture is valid and respond accordingly
+            if item_picture.filename:
+                # if larger than 1MB
+                if len(picture_data) > 1000*1024:
+                    return render_template("category.html", error="File has maximum size of 1MB",
+                                           category=category, review_items=review_items, admin=admin)
+                # if file is of allowed type
+                content_type = item_picture.content_type
+                if content_type.endswith('jpeg') or content_type.endswith('png') or content_type.endswith('jpg'):
+                    # try to save picture
+                    if picture.save_item_picture(item_id, picture_data):
+                        return redirect(request.url)
+            return render_template("category.html", error="Item created successfully. Something went wrong when saving picture.")
+        else:
+            return render_template("category.html", error="Something went wrong when trying to create a new review item.",
+                                   category=category, review_items=review_items, admin=admin)
 
 
 @app.route("/category/<category>/<int:id>", methods=["POST", "GET"])
@@ -108,13 +126,22 @@ def item(id, category):
         abort(404)
 
     rating = review_item.average_rating(id)
+    item_picture = picture.get_item_picture(id)
     reviews = review.get_reviews_for_review_item(id)
 
     admin = user.is_admin(session.setdefault("username", None))
 
     if request.method == "GET":
-        return render_template("review_item.html", review_item=item, rating=rating,
-                               reviews=reviews, admin=admin, category=category)
+        if item_picture:
+            encoded_picture = base64.b64encode(
+                bytes(item_picture)).decode('utf-8')
+            response = make_response(bytes(item_picture))
+            response.headers.set("Content-Type", "image/jpg")
+            return render_template("review_item.html", review_item=item, rating=rating,
+                                   reviews=reviews, admin=admin, category=category, picture=encoded_picture)
+        else:
+            return render_template("review_item.html", review_item=item, rating=rating,
+                                   reviews=reviews, admin=admin, category=category)
     if request.method == "POST":
         if not user.check_user(request.form["token"]):
             return render_template("review_item.html", error="Forbidden action", review_item=item,
@@ -144,12 +171,11 @@ def item(id, category):
 @app.route("/category/<category>/<int:id>/modify", methods=["POST", "GET"])
 def update_review_item(id, category):
     admin = user.is_admin(session.setdefault("username", None))
+    item = review_item.get_review_item(id)
 
     if request.method == "GET":
         token = user.check_user(request.args.get("token"))
         if admin and token:
-            item = review_item.get_review_item(id)
-            print(item)
             return render_template("review_item_modify.html", review_item=item)
         else:
             return render_template("error.html", message="Forbidden action")
@@ -159,6 +185,26 @@ def update_review_item(id, category):
             name = request.form["name"]
             publication_date = request.form["publication_date"]
             description = request.form["description"]
+            item_picture = request.files["picture"]
+
+            if item_picture:
+                picture_data = item_picture.read()
+                if item_picture.filename:
+                    if len(picture_data) > 1000*1024:
+                        return render_template("review_item_modify.html", error="File has a maximum size of 1MB", review_item=item)
+                    content_type = item_picture.content_type
+                    if content_type.endswith('jpg') or content_type.endswith('png') or content_type.endswith('jpeg'):
+                        if picture.get_item_picture(id):
+                            if not picture.update_item_picture(id, picture_data):
+                                return render_template("error.html", message="Something went wrong when trying to update item picture.")
+                        else:
+                            if not picture.save_item_picture(id, picture_data):
+                                return render_template("error.html", message="Something went wrong when trying to save item picture.")
+                            else:
+                                return redirect("/category" + str(category) + "/" + str(id))
+                else:
+                    return render_template("review_item_modify.html", error="File needs to be either JPG/JPEG or PNG", review_item=item)
+
             if review_item.update(name, description, publication_date, id):
                 return redirect("/category/" + str(category) + "/" + str(id))
             else:
