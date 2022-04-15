@@ -285,7 +285,8 @@ def user_page_modify(username):
                     if not picture.save_profile_picture(user.user_id(username), picture_data):
                         return render_template("error.html", message="Something went wrong when trying to save profile picture")
                     else:
-                        return redirect("/")
+                        url = "/user/" + str(username)
+                        return redirect(url)
             else:
                 return render_template("user_modify.html", message="File needs to be either JPG/JPEG or PNG",
                                        username=username, categories=cats, current_category=current_category)
