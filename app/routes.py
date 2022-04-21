@@ -135,8 +135,6 @@ def item(id, category):
         if item_picture:
             encoded_picture = base64.b64encode(
                 bytes(item_picture)).decode('utf-8')
-            response = make_response(bytes(item_picture))
-            response.headers.set("Content-Type", "image/jpg")
             return render_template("review_item.html", review_item=item, rating=rating,
                                    reviews=reviews, admin=admin, category=category, picture=encoded_picture)
         else:
@@ -159,6 +157,12 @@ def item(id, category):
             return render_template("review_item.html", error="Review has a length of 10-1000 characters.",
                                    review_item=item, rating=rating, reviews=reviews, admin=admin, category=category)
         if review.check_if_user_has_reviewed(user_id, review_item_id):
+            if item_picture:
+                encoded_picture = base64.b64encode(
+                    bytes(item_picture)).decode('utf-8')
+                return render_template("review_item.html", error="You have already reviewed this item.",
+                                       review_item=item, rating=rating, reviews=reviews, admin=admin, category=category,
+                                       picture=encoded_picture)
             return render_template("review_item.html", error="You have already reviewd this item.",
                                    review_item=item, rating=rating, reviews=reviews, admin=admin, category=category)
         if review.create(int(rating), text, review_item_id, user_id):
@@ -201,7 +205,7 @@ def update_review_item(id, category):
                             if not picture.save_item_picture(id, picture_data):
                                 return render_template("error.html", message="Something went wrong when trying to save item picture.")
                             else:
-                                return redirect("/category" + str(category) + "/" + str(id))
+                                return redirect("/category/" + str(category) + "/" + str(id))
                 else:
                     return render_template("review_item_modify.html", error="File needs to be either JPG/JPEG or PNG", review_item=item)
 
@@ -236,10 +240,9 @@ def delete_review(id):
            WHERE user_account.username=:username AND review.id=:id"
     result = db.session.execute(
         sql, {"username": session.get("username", None), "id": id})
-    same_user = result.fetchone()[0]
 
     # if the user trying to delete the review is admin or is the same user who created it, delete review
-    if admin or same_user == 1:
+    if admin or (result and result.fetchone()[0] == 1):
         if review.delete(id):
             category = request.args.get("category")
             item = request.args.get("item")
@@ -255,6 +258,14 @@ def user_page(username):
         abort(404)
 
     user_information = user.get_user_information(username)
+    favourite_category = None
+    description = None
+    if user_information:
+        for information in user_information:
+            if information.key == "favourite_category":
+                favourite_category = information.value
+            elif information.key == "description":
+                description = information.value
     reviews = review.get_reviews_for_user(username)
     profile_picture = picture.get_profile_picture(user.user_id(username))
 
@@ -267,7 +278,7 @@ def user_page(username):
             bytes(profile_picture)).decode('utf-8')
         response = make_response(bytes(profile_picture))
         response.headers.set("Content-Type", "image/jpg")
-        return render_template("user.html", user_information=user_information,
+        return render_template("user.html", favourite_category=favourite_category, description=description,
                                username=username, reviews=reviews, allowed_to_modify=allowed_to_modify,
                                profile_picture=encoded_picture)
     else:
@@ -294,9 +305,12 @@ def user_page_modify(username):
     cats = categories.get_categories()
     current_category = user.get_user_information_by_key("favourite_category",
                                                         user.user_id(username))
+    current_description = user.get_user_information_by_key("description",
+                                                           user.user_id(username))
 
     if request.method == "GET":
-        return render_template("user_modify.html", username=username, categories=cats, current_category=current_category)
+        return render_template("user_modify.html", username=username, categories=cats,
+                               current_category=current_category, current_description=current_description)
 
     if request.method == "POST":
         if not user.check_user(request.form["token"]):
@@ -305,13 +319,26 @@ def user_page_modify(username):
         profile_picture = request.files["profile_picture"]
         picture_data = profile_picture.read()
         favourite_category = request.form["category"]
+        if favourite_category not in categories.get_categories():
+            return render_template("error.html", message="Category is not supported")
+
+        description = request.form["description"]
+        if len(description) > 500:
+            return render_template("error.html", message="Description has maximum length of 500 characters.")
 
         if current_category:
             if not user.update_user_information("favourite_category", favourite_category, user.user_id(username)):
-                return render_template("error.html", message="Something went wrong when trying to update user information")
+                return render_template("error.html", message="Something went wrong when trying to update user information.")
         else:
             if not user.add_user_information("favourite_category", favourite_category, user.user_id(username)):
-                return render_template("error.html", message="Something went wrong when trying to save user information")
+                return render_template("error.html", message="Something went wrong when trying to save user information.")
+
+        if current_description:
+            if not user.update_user_information("description", description, user.user_id(username)):
+                return render_template("error.html", message="Something went wrong when trying to update user information.")
+        else:
+            if not user.add_user_information("description", description, user.user_id(username)):
+                return render_template("error.html", message="Something went wrong when trying to save user information.")
 
         # This is a mess. Try to clean it up
         if profile_picture.filename:

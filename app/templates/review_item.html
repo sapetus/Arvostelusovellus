@@ -2,40 +2,55 @@
 
 {% block content%}
 
-<h3>{{review_item.name}}</h3>
-{% if picture %}
-<img src="data:;base64,{{picture}}" alt="Items picture" width="auto" height="200px">
-{% endif %}
-<p>{{review_item.description}}</p>
-<p>Rating: {{rating}}</p>
-<p>Publication date: {{review_item.publication_date}}</p>
-<p>Category: {{review_item.category.capitalize()}}</p>
+<div id="review_item">
+    <div class="container">
+        <h3 id="item_name">{{review_item.name}}</h3>
+        <h3 id="item_publication_date">
+            {{review_item.publication_date.day}}.{{review_item.publication_date.month}}.{{review_item.publication_date.year}}
+        </h3>
+        <h3 class="rating">{{rating}}</h3>
+        {% if admin %}
+        <form action="/category/{{category}}/{{review_item.id}}/modify">
+            <input type="hidden" name="token" value="{{session.token}}">
+            <button action="submit">Edit</button>
+        </form>
+        <form action="/category/{{category}}/{{review_item.id}}/delete" method="post">
+            <input type="hidden" name="token" value="{{session.token}}">
+            <button action="submit">Delete</button>
+        </form>
+        {% endif %}
+    </div>
 
-{% if admin %}
-<form action="/category/{{category}}/{{review_item.id}}/modify">
-    <input type="hidden" name="token" value="{{session.token}}">
-    <button action="submit">Edit</button>
-</form>
-<form action="/category/{{category}}/{{review_item.id}}/delete" method="post">
-    <input type="hidden" name="token" value="{{session.token}}">
-    <button action="submit">Delete</button>
-</form>
-{% endif %}
+    <hr>
+
+    <div class="container flex_start">
+        {% if picture %}
+        <img id="item_picture" src="data:;base64,{{picture}}" alt="Items picture">
+        {% endif %}
+        <p id="item_description">{{review_item.description}}</p>
+    </div>
+</div>
 
 <hr>
 
-<h2>Reviews</h2>
-{% for review in reviews %}
-<div>
-    <p>{{review.text}}</p>
-    <p>Rating: {{review.rating}}</p>
-    <p>Review by: <a href="/user/{{review.username}}">{{review.username}}</a></p>
-    {% if admin or session.username == review.username %}
-    <a href="/delete_review/{{review.id}}?category={{category}}&item={{review_item.id}}">Delete review</a>
-    {% endif %}
-    <br>
-</div>
-{% endfor %}
+<div id="item_reviews">
+    <h2>Reviews</h2>
+    {% for review in reviews %}
+    <div class="review">
+        <div class="review_content">
+            <h3 class="rating">{{review.rating}}</h3>
+            <p>{{review.text}}</p>
+        </div>
+        <p>
+            Review by: <a href="/user/{{review.username}}">{{review.username}}</a>
+        </p>
+        {% if admin or session.username == review.username %}
+        <a href="/delete_review/{{review.id}}?category={{category}}&item={{review_item.id}}">Delete review</a>
+        {% endif %}
+        <br>
+    </div>
+    {% endfor %}
+</div>¨
 
 <hr>
 

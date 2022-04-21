@@ -61,3 +61,4 @@ def update_item_picture(id, picture):
         return True
     except:
         return False
+        

@@ -18,6 +18,9 @@
     {% endif %}
     {% endfor %}
   </select>
+  <label>Describe yourself:</label>
+  <textarea cols="30" rows="4" maxlength="500"
+    name="description">{% if current_description %}{{current_description}}{% endif %}</textarea>
   <br>
   <label>Profile picture:</label>
   <input type="file" name="profile_picture">

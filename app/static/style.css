@@ -1,3 +1,7 @@
+* {
+    font-family: 'Roboto';
+}
+
 body {
     display: flex;
     flex-direction: column;
@@ -23,4 +27,70 @@ hr {
     width: 100%;
     border-top: 1px solid black;
     border-bottom: None;
+}
+
+#review_item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-evenly;
+    width: 100%;
+}
+
+#item_reviews {
+    display: flex;
+    align-self: flex-start;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 0 3em;
+    width: 90%;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+}
+.container.flex_start {
+    align-items: flex-start;
+    padding: 2em 0;
+}
+
+#item_description {
+    width: 50%;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    border: 2px solid black;
+    border-radius: 50px;
+    flex-shrink: 0;
+    width: 50px;
+    height: 50px;
+}
+
+#item_picture {
+    height: auto;
+    width: 30%;
+    border: 2px solid rgb(0, 0, 0);
+    border-radius: 20px;
+}
+
+.review {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.review_content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1em;
 }

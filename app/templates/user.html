@@ -9,12 +9,12 @@
 <img src="data:;base64,{{profile_picture}}" alt="Users profile picture" width="auto" height="200px">
 {% endif %}
 
-{% if user_information %}
-{% for information in user_information %}
-<p>{{information.key.replace("_", " ").title()}}: {{information.value}}s</p>
-{% endfor %}
-{% else %}
-<p>No information</p>
+{% if favourite_category %}
+<p>Favourite Category: {{favourite_category}}s</p>
+{% endif %}
+
+{% if description %}
+<p>Description: {{description}}</p>
 {% endif %}
 
 {% if allowed_to_modify %}
