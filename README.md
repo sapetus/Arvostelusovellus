@@ -17,7 +17,7 @@ Ominaisuuksia:
 
 ## Sovelluksen nykyinen tilanne
 
-Sovelluksen perustoiminnallisuudet toimivat suurinpiirtein.
+Sovelluksen toiminnallisuudet on toteutettu. Visuaalinen ilme on kesken.
 
 Käyttöohjeita:
 
