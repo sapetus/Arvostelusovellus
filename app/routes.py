@@ -231,7 +231,7 @@ def delete_review_item(id, category):
         return render_template("error.html", message="Forbidden action")
 
 
-@app.route("/delete_review/<int:id>")
+@app.route("/delete_review/<int:id>", methods=["POST"])
 def delete_review(id):
     admin = user.is_admin(session.setdefault("username", None))
     # checks if the user trying to delete the review is the same as the one who created it
@@ -246,6 +246,7 @@ def delete_review(id):
         if review.delete(id):
             category = request.args.get("category")
             item = request.args.get("item")
+            print(str(category) + ", " + str(item))
             url = "/category/" + str(category) + "/" + str(item)
             return redirect(url)
 

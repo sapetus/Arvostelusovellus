@@ -15,14 +15,24 @@
     <h1>Rating App</h1>
 
     <nav>
-      <a href="/">Home</a>
+      <form action="/">
+        <button type="submit">Home</button>
+      </form>
       {% if not session.username %}
-      <a href="/login">Login</a>
-      <a href="/register">Register</a>
+      <form action="/login">
+        <button type="submit">Login</button>
+      </form>
+      <form action="/register">
+        <button type="submit">Register</button>
+      </form>
       {% endif %}
       {% if session.username %}
-      <a href="/logout">Logout</a>
-      <a href="/user/{{session.username}}">Profile</a>
+      <form action="/logout">
+        <button typ="submit">Logout</button>
+      </form>
+      <form action="/user/{{session.username}}">
+        <button type="submit">Profile</button>
+      </form>
       {% endif %}
     </nav>
 

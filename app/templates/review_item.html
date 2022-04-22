@@ -10,14 +10,16 @@
         </h3>
         <h3 class="rating">{{rating}}</h3>
         {% if admin %}
-        <form action="/category/{{category}}/{{review_item.id}}/modify">
-            <input type="hidden" name="token" value="{{session.token}}">
-            <button action="submit">Edit</button>
-        </form>
-        <form action="/category/{{category}}/{{review_item.id}}/delete" method="post">
-            <input type="hidden" name="token" value="{{session.token}}">
-            <button action="submit">Delete</button>
-        </form>
+        <div>
+            <form action="/category/{{category}}/{{review_item.id}}/modify">
+                <input type="hidden" name="token" value="{{session.token}}">
+                <button action="submit">Edit</button>
+            </form>
+            <form action="/category/{{category}}/{{review_item.id}}/delete" method="post">
+                <input type="hidden" name="token" value="{{session.token}}">
+                <button action="submit">Delete</button>
+            </form>
+        </div>
         {% endif %}
     </div>
 
@@ -45,29 +47,31 @@
             Review by: <a href="/user/{{review.username}}">{{review.username}}</a>
         </p>
         {% if admin or session.username == review.username %}
-        <a href="/delete_review/{{review.id}}?category={{category}}&item={{review_item.id}}">Delete review</a>
+        <form action="/delete_review/{{review.id}}?category={{category}}&item={{review_item.id}}" method="POST">
+            <button class="large" type="submit">Delete Review</button>
+        </form>
         {% endif %}
         <br>
     </div>
     {% endfor %}
-</div>¨
+</div>
 
-<hr>
 
 {% if session.username %}
 {% if error %}
 <p>{{error}}</p>
 {% endif %}
+<hr>
 <form action="/category/{{review_item.category}}/{{review_item.id}}" method="POST">
     <p>Rating <br>
-        <input type="number" min="1" max="10" name="rating">
+        <input type="number" min="1" max="10" name="rating" placeholder="1-10">
     </p>
     <p>Review <br>
-        <textarea name="review" cols="40" rows="4" maxlength="1000" minlength="10"></textarea>
+        <textarea name="review" cols="40" rows="6" maxlength="1000" minlength="10" placeholder="Write your review here..."></textarea>
     </p>
     <input type="hidden" name="review_item_id" value="{{review_item.id}}">
     <input type="hidden" name="token" value="{{session.token}}">
-    <button type="submit">Create Review</button>
+    <button class="large" type="submit">Create Review</button>
 </form>
 {% endif %}
 {% endblock %}
