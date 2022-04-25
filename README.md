@@ -17,7 +17,7 @@ Ominaisuuksia:
 
 ## Sovelluksen nykyinen tilanne
 
-Sovelluksen toiminnallisuudet on toteutettu. Visuaalinen ilme on kesken.
+Sovelluksen toiminnallisuudet on toteutettu. Visuaalinen ilme tyydyttävä.
 
 Käyttöohjeita:
 
