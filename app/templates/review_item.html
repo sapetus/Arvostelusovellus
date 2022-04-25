@@ -3,7 +3,7 @@
 {% block content%}
 
 <div id="review_item">
-    <div class="container">
+    <div class="container_row">
         <h3 id="item_name">{{review_item.name}}</h3>
         <h3 id="item_publication_date">
             {{review_item.publication_date.day}}.{{review_item.publication_date.month}}.{{review_item.publication_date.year}}
@@ -25,7 +25,7 @@
 
     <hr>
 
-    <div class="container flex_start">
+    <div class="container_row flex_start">
         {% if picture %}
         <img id="item_picture" src="data:;base64,{{picture}}" alt="Items picture">
         {% endif %}

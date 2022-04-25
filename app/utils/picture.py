@@ -54,11 +54,10 @@ def save_item_picture(id, picture):
 
 
 def update_item_picture(id, picture):
-    try: 
+    try:
         sql = "UPDATE picture SET picture=:picture WHERE review_item_id=:id"
         db.session.execute(sql, {"picture": picture, "id": id})
         db.session.commit()
         return True
     except:
         return False
-        

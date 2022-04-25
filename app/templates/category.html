@@ -7,16 +7,17 @@
 {% if error %}
 <p>{{error}}</p>
 {% endif %}
+<hr>
 <form action="/category/{{category}}" method="POST" enctype="multipart/form-data">
     <p>Publication date <br>
         <input type="date" name="publication_date">
     </p>
     <p>Name <br>
-        <input type="text" name="name" maxlength="500" minlength="1" placeholder="Name of the movie">
+        <input type="text" name="name" maxlength="300" minlength="1" placeholder="Name of the item">
     </p>
     <p>Description <br>
         <textarea name="description" cols="40" rows="4" maxlength="1000" minlength="10"
-            placeholder="Write description of the movie here..."></textarea>
+            placeholder="Write description here..."></textarea>
     </p>
     <p>Picture <br>
         <input type="file" name="picture">

@@ -6,8 +6,8 @@ def create(name, publication_date, category, description):
         sql = "INSERT INTO review_item (name, publication_date, category, description) \
                VALUES (:name, :publication_date, :category, :description) RETURNING id"
         result = db.session.execute(sql,
-                           {"name": name, "publication_date": publication_date,
-                            "category": category, "description": description})
+                                    {"name": name, "publication_date": publication_date,
+                                     "category": category, "description": description})
         db.session.commit()
         return result.fetchone().id
     except:
@@ -26,8 +26,10 @@ def delete(id):
 
 def update(name, description, publication_date, id):
     try:
-        sql = "UPDATE review_item SET name=:name, description=:description, publication_date=:publication_date WHERE id=:id"
-        db.session.execute(sql, {"name": name, "description": description, "publication_date": publication_date, "id": id})
+        sql = "UPDATE review_item SET name=:name, description=:description,\
+             publication_date=:publication_date WHERE id=:id"
+        db.session.execute(sql, {"name": name, "description": description,
+                                 "publication_date": publication_date, "id": id})
         db.session.commit()
         return True
     except:
@@ -49,8 +51,7 @@ def get_review_item(id):
 
     if review_item:
         return review_item
-    else:
-        return None
+    return None
 
 
 def average_rating(id):

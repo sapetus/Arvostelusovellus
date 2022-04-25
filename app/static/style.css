@@ -30,6 +30,9 @@ button.large {
 input[type=text] {
     width: 100%;
 }
+input[type=password] {
+    width: 100%;
+}
 
 textarea {
     width: 100%;
@@ -100,11 +103,38 @@ hr {
     border-radius: 20px;
 }
 
+#user_picture {
+    height: auto;
+    width: 10vw; 
+    border: 2px solid rgb(0, 0, 0);
+    border-radius: 20px;
+}
+
 #item_description {
     width: 50%;
 }
 
-.container {
+#user_info {
+    display: flex;
+    flex-direction: row;
+    width: 90%;
+    justify-content: space-around;
+    padding-bottom: 10px;
+}
+
+.user_review {
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+}
+
+.container_column {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.container_row {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
@@ -112,7 +142,7 @@ hr {
     gap: 1em;
     width: 100%;
 }
-.container.flex_start {
+.container_row.flex_start {
     align-items: flex-start;
     padding: 2em 0;
 }
