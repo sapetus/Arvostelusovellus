@@ -28,4 +28,4 @@ Käyttöohjeita:
 * Tuotetta painamalla pääsee kyseisen tuotteen sivulle.
 * Tuote sivulla voi kirjoittaa arvostelun kyseiselle tuotteelle.
 * Profiili sivulla näkee omat arvostelunsa (Tai toisen käyttäjän, riippuu kenen profiilissa olet).
-* Voit muokata omaa profiilia (Tällä hetkellä voi lisätä oman profiilikuvan, ja lisätä oman suosikki kategorian).
+* Voit muokata omaa profiilia (Tällä hetkellä voi lisätä oman profiilikuvan,lisätä oman suosikki kategorian, ja kirjoittaa lyhyen esittelyn itsestään).
